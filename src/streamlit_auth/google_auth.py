@@ -1,10 +1,10 @@
-import asyncio
-from typing import Optional, Dict
-
-import jwt
 import streamlit as st
+import asyncio
+import jwt
+
 from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.oauth2 import OAuth2Token
+from typing import Optional, Dict
 
 testing_mode = st.secrets.get("testing_mode", False)
 
