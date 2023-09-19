@@ -7,6 +7,7 @@ Streamlit module for creating oauth protected Stramlit apps.
 
 
 ## Packaging
+为了将此模块打包并上传到PyPI，请遵循以下步骤：
 ```sh
 python3 -m pip install build
 python3 -m build
@@ -15,6 +16,7 @@ python3 -m twine upload --repository pypi dist/*
 ```
 
 ## Local Installation
+要在本地安装此模块，可以使用以下命令：
 ```
 pip install dist/*.tar.gz
 ```
@@ -35,6 +37,9 @@ add_auth()
 
 st.write("Congrats, you are logged in!")
 st.write('the email of the user is ' + str(st.session_state.login_user["email"]))
+```
+
+This package expects that you have a .streamlit/secrets.toml file which you will have to create. Inside it, you will need to add your Keycloak or Google API information that runs the authentication. Below is how the package expects your secrets file to look.
 
 ```toml
 [oauth]
