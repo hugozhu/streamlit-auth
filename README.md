@@ -1,6 +1,8 @@
 # streamlit-auth
 Streamlit module for creating oauth protected Stramlit apps.
 
+[![Packaging](https://github.com/hugozhu/streamlit-auth/actions/workflows/python-publish.yml/badge.svg?branch=main)](https://github.com/hugozhu/streamlit-auth/actions/workflows/python-publish.yml)
+
 [![Releases](https://img.shields.io/pypi/v/streamlit-auth)](https://pypi.org/project/streamlit-auth/)
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://hugozhu.streamlit.app)
