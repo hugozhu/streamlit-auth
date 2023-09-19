@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "streamlit-auth"
+version = "0.1.0"
+description = "A Python package for creating oauth protected Streamlit apps"
+authors = [
+    {name = "Hugo Zhu", email = "hugozhu@gmail.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "streamlit-keycloak",
+    "httpx-oauth"
+]
+requires-python = ">=3.8.0"
