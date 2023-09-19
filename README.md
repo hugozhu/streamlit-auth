@@ -1,7 +1,7 @@
 # streamlit-auth
 Streamlit module for creating oauth protected Stramlit apps.
 
-[![Releases](https://img.shields.io/pypi/v/st-paywall)](https://pypi.org/project/streamlit-auth/)
+[![Releases](https://img.shields.io/pypi/v/streamlit-auth)](https://pypi.org/project/streamlit-auth/)
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://hugozhu.streamlit.app)
 
@@ -28,20 +28,13 @@ pip install dist/*.tar.gz
 Once you configure the authentication and subscription on `st.secrets`, you can use the the library methods to conditionally render the content of the page:
 
 ```python
-from st_paywall import add_auth
+import streamlit as st
+from streamlit_auth import add_auth
 
-add_auth(required=True)
+add_auth()
 
-#after authentication, the email and subscription status is stored in session state
-st.write(st.session_state.email)
-st.write(st.session_state.user_subscribed)
-```
-
-If the `required` parameter is `True`, the app will stop with `st.stop()` if the user is not logged in and subscribed. Otherwise, you the developer will have control over exactly how you want to paywall the apps!
-
-I hope you use this to create tons of value, and capture some of it with the magic of Streamlit.
-
-This package expects that you have a `.streamlit/secrets.toml` file which you will have to create. Inside it, you will need to add your Stripe (or Buy Me A Coffee) and Google API information that runs the authentication and subscription parts of the package. If you already have all of your information for your payment and authentication providers, here is how the package expects your secrets file to look.
+st.write("Congrats, you are logged in!")
+st.write('the email of the user is ' + str(st.session_state.login_user["email"]))
 
 ```toml
 [oauth]
