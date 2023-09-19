@@ -1,11 +1,11 @@
 name: Upload Python Package
 
 on:
-  push:
-    branches: [ main ]
+  # push:
+  #   branches: [main]
 
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -28,11 +28,8 @@ jobs:
         python3 -m pip install build
         python3 -m build
     
-    - name: Build package
-      run: python3 -m pip install --user --upgrade twine
-    
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
