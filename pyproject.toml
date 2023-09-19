@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "streamlit-auth"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python package for creating oauth protected Streamlit apps"
 authors = [
     {name = "Hugo Zhu", email = "hugozhu@gmail.com"}
