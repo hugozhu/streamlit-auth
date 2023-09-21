@@ -44,61 +44,47 @@ def require_auth(message="Please sign in"):
     st.stop()
 
 def add_auth(required=True, show_sidebar=True):
-    user_info = get_logged_in_user()    
-    if oauth_provider == 'keycloak':
-        if not user_info:
+    user_info = get_logged_in_user()        
+    if not user_info:
+        if oauth_provider == 'keycloak':
             show_keycloak_login_button()
-            st.stop()
+        if oauth_provider == 'google':    
+            show_google_login_button()       
+        st.stop()        
 
-        if show_sidebar:
-            st.sidebar.write(user_info['email'])            
-            if st.sidebar.button("Logout", type="primary"):    
-                del st.session_state.login_user
-                st.session_state.pop('email', None)
-                uuid = cookie_manager.get("uuid")
-                cookie_manager.delete(uuid)
-                del st.cache_data.login_users[uuid]
+    if show_sidebar:
+        st.sidebar.write(user_info['email'])
+        if st.sidebar.button("Logout", type="primary"):            
+            st.session_state.pop('login_user', None)
+            st.session_state.pop('email', None)
+            uuid = cookie_manager.get("uuid")
+            cookie_manager.delete(uuid)                
+            st.cache_data.login_users.pop(uuid, None)
+
+            if oauth_provider == 'keycloak':
                 import webbrowser
                 webbrowser.open(st.secrets["oauth"]["keycloak"]['logout_url'])
-                st.experimental_rerun()            
 
-    if oauth_provider == 'google':
-        if not user_info:
-            show_google_login_button()   
-            st.stop()
-        
-        if show_sidebar:
-            st.sidebar.write(user_info['email'])
-            if st.sidebar.button("Logout", type="primary"):            
-                st.session_state.pop('login_user', None)
-                st.session_state.pop('email', None)
-                uuid = cookie_manager.get("uuid")
-                cookie_manager.delete(uuid)                
-                del st.cache_data.login_users[uuid]
-                st.experimental_rerun()
+            st.experimental_rerun()
 
     return user_info
 
 def get_logged_in_user() -> Optional[Dict]:
     login = get_login()
-    if login != None:
+    if login is not None:
         return login
     
     if oauth_provider == 'keycloak':
         user_info = get_keycloak_user()
-        if user_info:
-            uuid = gen_session_id()
-            cookie_manager.set("uuid", uuid)
-            st.session_state.login_user = user_info
-            st.cache_data.login_users[uuid] = user_info
-            return user_info        
-
+        
     if oauth_provider == 'google':
         user_info = get_google_user()
-        if user_info:
-            cookie_manager.set("uuid", gen_session_id())
-            st.session_state.login_user = user_info
-            st.cache_data.login_users[uuid] = user_info
-            return user_info
+
+    if user_info:
+        uuid = gen_session_id()
+        cookie_manager.set("uuid", uuid)
+        st.session_state.login_user = user_info
+        st.cache_data.login_users[uuid] = user_info
+        return user_info
     
     return None
