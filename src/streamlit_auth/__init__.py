@@ -36,12 +36,12 @@ def get_login():
 
     return None
 
-def require_auth(message="Please sign in",  icon="⚠️"):
+def require_auth(message="Please sign in"):
     if login := get_login():
         return login
 
     if message:
-        st.warning(message, icon)
+        st.warning(message, icon="⚠️")
 
     st.stop()
 
