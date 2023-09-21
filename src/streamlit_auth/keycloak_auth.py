@@ -19,6 +19,41 @@ def get_logged_in_user() -> Optional[Dict]:
     
     return None
 
+
+def markdown_button(id: str,
+    url: str, text: Optional[str] = None, color="#FD504D", sidebar: bool = True
+):
+    markdown = st.sidebar.markdown if sidebar else st.markdown
+
+    markdown(
+        f"""
+    <a id='{id}' href="{url}" target="_self">
+        <div style="
+            display: inline-flex;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            font-weight: 400;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            margin: 0px;
+            line-height: 1.6;
+            width: auto;
+            user-select: none;
+            background-color: {color};
+            color: rgb(255, 255, 255);
+            border: 1px solid rgb(255, 75, 75);
+            text-decoration: none;
+            ">
+            {text}
+        </div>
+    </a>
+    """,
+        unsafe_allow_html=True,
+    )
+
+
 def markdown_label(
     text: str, color="#FD504D", sidebar: bool = True
 ):

@@ -6,6 +6,10 @@ from .google_auth import get_logged_in_user as get_google_user, show_login_butto
 
 from .keycloak_auth import get_logged_in_user as get_keycloak_user, show_login_button as show_keycloak_login_button
 
+from streamlit.logger import get_logger
+
+logger = get_logger(__name__)
+
 st.cache_data.login_users = {}
 
 def gen_session_id():
@@ -26,64 +30,95 @@ def get_oauth_provider() -> str:
 oauth_provider = get_oauth_provider()
 
 def get_login():
-    if "login_user" in st.session_state:
-        if "email" in st.session_state.login_user:
-            return st.session_state.login_user
-
     if uuid := cookie_manager.get('uuid'):
+        # logger.info("--uuid -%s---%s", uuid, cookie_manager)
         return st.cache_data.login_users.get(uuid)
 
     return None
 
-def require_auth(message="Please sign in"):
+def require_auth(message="Please sign in",  icon="⚠️"):
     if login := get_login():
         return login
 
     if message:
-        st.warning(message, icon="⚠️")
+        st.warning(message, icon)
+
     st.stop()
 
-def add_auth(required=True, show_sidebar=True):
-    user_info = get_logged_in_user()        
-    if not user_info:
-        if oauth_provider == 'keycloak':
-            show_keycloak_login_button()
-        if oauth_provider == 'google':    
-            show_google_login_button()       
-        st.stop()        
+def add_auth(required=True, show_login_button=True, show_sidebar=True):
+    user_info = get_logged_in_user()   
+    if show_login_button:
+        if not user_info:
+            if oauth_provider == 'keycloak':
+                show_keycloak_login_button()
+            if oauth_provider == 'google':    
+                show_google_login_button()       
+            st.stop()        
 
     if show_sidebar:
         st.sidebar.write(user_info['email'])
-        if st.sidebar.button("Logout", type="primary"):            
-            st.session_state.pop('login_user', None)
-            st.session_state.pop('email', None)
-            uuid = cookie_manager.get("uuid")
-            cookie_manager.delete(uuid)                
-            st.cache_data.login_users.pop(uuid, None)
-
-            if oauth_provider == 'keycloak':
-                import webbrowser
-                webbrowser.open(st.secrets["oauth"]["keycloak"]['logout_url'])
-
-            st.experimental_rerun()
+        if oauth_provider == 'keycloak':
+            if st.sidebar.button("Logout", type="primary"):
+                uuid = cookie_manager.get("uuid")
+                if not uuid:
+                    uuid = ""
+                else:
+                    cookie_manager.delete("uuid")
+                    st.cache_data.login_users.pop(uuid, None)            
+                st.sidebar.markdown(f"""
+                        <a id="keycloak-btn" href="javascript:void(0);"></a>
+                    """, unsafe_allow_html=True)
+                from streamlit.components.v1 import html
+                html(f"""
+                    <script>
+                        function redirectToKeycloak() {{
+                            window.top.document.getElementById('keycloak-link').click();
+                        }}
+                        window.parent.document.getElementById('keycloak-btn').addEventListener("click", function(event) {{
+                            redirectToKeycloak();
+                            event.preventDefault();
+                        }}, false);
+                     
+                        // Create iframe element
+                        const redirect_link = document.createElement('a');
+                        redirect_link.href = '{st.secrets["oauth"]["keycloak"]['logout_url']}';
+                        redirect_link.target = '_top';
+                        redirect_link.innerText = 'Invisible Link';
+                        redirect_link.style = 'display:none;';
+                        redirect_link.id = 'keycloak-link';
+                        window.top.document.body.appendChild(redirect_link);
+                        redirectToKeycloak();
+                    </script>
+                """) 
+        else:
+            if st.sidebar.button("Logout", type="primary"):
+                uuid = cookie_manager.get("uuid")
+                if not uuid:
+                    uuid = ""
+                else:
+                    cookie_manager.delete("uuid")
+                    st.cache_data.login_users.pop(uuid, None)
+                st.experimental_rerun()
 
     return user_info
 
 def get_logged_in_user() -> Optional[Dict]:
     login = get_login()
+    # logger.info("--get_login -%s---", login)
+
     if login is not None:
         return login
     
     if oauth_provider == 'keycloak':
         user_info = get_keycloak_user()
+        # logger.info("--keycloak -%s---", user_info)
         
-    if oauth_provider == 'google':
+    elif oauth_provider == 'google':
         user_info = get_google_user()
 
     if user_info:
         uuid = gen_session_id()
         cookie_manager.set("uuid", uuid)
-        st.session_state.login_user = user_info
         st.cache_data.login_users[uuid] = user_info
         return user_info
     
