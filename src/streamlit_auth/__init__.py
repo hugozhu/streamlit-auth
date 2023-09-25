@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 
 st.cache_data.login_users = {}
 
-def gen_session_id():
+def new_session_id():
     return uuid.uuid4().hex
 
 @st.cache_data
@@ -29,9 +29,16 @@ def get_oauth_provider() -> str:
     
 oauth_provider = get_oauth_provider()
 
+def get_sssion_id():
+    uuid = cookie_manager.get("uuid")
+    if uuid is None:
+        uuid = st.session_state.get("uuid")
+    return uuid
+
 def get_login():
-    if uuid := cookie_manager.get('uuid'):
-        # logger.info("--uuid -%s---%s", uuid, cookie_manager)
+    uuid = get_sssion_id()
+    # logger.info("--uuid -%s---%s", uuid, cookie_manager)    
+    if uuid is not None:
         return st.cache_data.login_users.get(uuid)
 
     return None
@@ -60,10 +67,11 @@ def add_auth(required=True, show_login_button=True, show_sidebar=True):
         if oauth_provider == 'keycloak':
             if st.sidebar.button("Logout", type="primary"):
                 uuid = cookie_manager.get("uuid")
-                if not uuid:
+                if uuid is not None:
                     uuid = ""
                 else:
                     cookie_manager.delete("uuid")
+                    st.session_state.pop('uuid', None)
                     st.cache_data.login_users.pop(uuid, None)            
                 st.sidebar.markdown(f"""
                         <a id="keycloak-btn" href="javascript:void(0);"></a>
@@ -90,21 +98,22 @@ def add_auth(required=True, show_login_button=True, show_sidebar=True):
                         redirectToKeycloak();
                     </script>
                 """) 
-        else:
+
+        if oauth_provider == 'google':
             if st.sidebar.button("Logout", type="primary"):
-                uuid = cookie_manager.get("uuid")
-                if not uuid:
-                    uuid = ""
-                else:
-                    cookie_manager.delete("uuid")
-                    st.cache_data.login_users.pop(uuid, None)
+                uuid = get_sssion_id()
+                if uuid is None:
+                    uuid = ""                
+                cookie_manager.delete("uuid")
+                st.session_state.pop('uuid', None)
+                st.cache_data.login_users.pop(uuid, None)
                 st.experimental_rerun()
 
     return user_info
 
 def get_logged_in_user() -> Optional[Dict]:
     login = get_login()
-    # logger.info("--get_login -%s---", login)
+    #logger.info("--get_login -%s---", login)
 
     if login is not None:
         return login
@@ -113,12 +122,19 @@ def get_logged_in_user() -> Optional[Dict]:
         user_info = get_keycloak_user()
         # logger.info("--keycloak -%s---", user_info)
         
-    elif oauth_provider == 'google':
-        user_info = get_google_user()
+    if oauth_provider == 'google':
+        try:
+            user_info = get_google_user()
+            logger.info("--google -%s---", user_info)
+        except:
+            logger.info("parse google callback url error")
+            user_info = None
 
     if user_info:
-        uuid = gen_session_id()
+        uuid = new_session_id()
         cookie_manager.set("uuid", uuid)
+        st.session_state["uuid"] = uuid
+        # logger.info("--uuid -%s-: %s--%s", uuid, user_info, cookie_manager.get('uuid'))        
         st.cache_data.login_users[uuid] = user_info
         return user_info
     
