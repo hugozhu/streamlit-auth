@@ -3,7 +3,7 @@ name: Upload Python Package
 on:
   push:
     branches:
-      - main
+      - test
 
 permissions:
   contents: read
@@ -22,7 +22,6 @@ jobs:
     
     - name: Install dependencies
       run: |
-        python3 -m pip install --upgrade pip
         python3 -m pip install build
         python3 -m build
     
@@ -31,3 +30,12 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+
+    - uses: hugozhu/dingtalk-github-action@v1
+      with:
+        token: ${{ secrets.DINGTALK_TOKEN }}
+        title: 'Blog updated from Github action'
+        type: text
+        content: |
+          ## streamlit-auth published
+          > from github action message        
