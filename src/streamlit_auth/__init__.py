@@ -53,19 +53,20 @@ def require_auth(message="Please sign in"):
     st.stop()
 
 def add_auth(required=True, show_login_button=True, show_sidebar=True):
-    user_info = get_logged_in_user()   
-    if show_login_button:
-        if not user_info:
-            if oauth_provider == 'keycloak':
-                show_keycloak_login_button()
-            if oauth_provider == 'google':    
-                show_google_login_button()       
-            st.stop()        
-
-    if show_sidebar:
-        st.sidebar.write(user_info['email'])
+    user_info = get_logged_in_user()
+    stb =  st.sidebar if show_sidebar else st._main
+    with stb:    
+        if show_login_button:
+            if not user_info:
+                if oauth_provider == 'keycloak':
+                    show_keycloak_login_button(sidebar = show_sidebar)
+                if oauth_provider == 'google':    
+                    show_google_login_button(sidebar = show_sidebar)       
+                st.stop()
+            
+        st.write(user_info['email'])
         if oauth_provider == 'keycloak':
-            if st.sidebar.button("Logout", type="primary"):
+            if st.button("Logout", type="primary"):
                 uuid = cookie_manager.get("uuid")
                 if uuid is not None:
                     uuid = ""
@@ -73,7 +74,7 @@ def add_auth(required=True, show_login_button=True, show_sidebar=True):
                     cookie_manager.delete("uuid")
                     st.session_state.pop('uuid', None)
                     st.cache_data.login_users.pop(uuid, None)            
-                st.sidebar.markdown(f"""
+                st.markdown(f"""
                         <a id="keycloak-btn" href="javascript:void(0);"></a>
                     """, unsafe_allow_html=True)
                 from streamlit.components.v1 import html
@@ -100,7 +101,7 @@ def add_auth(required=True, show_login_button=True, show_sidebar=True):
                 """) 
 
         if oauth_provider == 'google':
-            if st.sidebar.button("Logout", type="primary"):
+            if st.button("Logout", type="primary"):
                 uuid = get_sssion_id()
                 if uuid is None:
                     uuid = ""                
@@ -125,9 +126,9 @@ def get_logged_in_user() -> Optional[Dict]:
     if oauth_provider == 'google':
         try:
             user_info = get_google_user()
-            logger.info("--google -%s---", user_info)
+            # logger.info("--google -%s---", user_info)
         except:
-            logger.info("parse google callback url error")
+            # logger.info("parse google callback url error")
             user_info = None
 
     if user_info:

@@ -85,5 +85,5 @@ def markdown_label(
         unsafe_allow_html=True,
     )
 
-def show_login_button():
-    markdown_label("Please sign in ...")
+def show_login_button(sidebar: bool = True):
+    markdown_label("Please sign in ...", sidebar=sidebar)

@@ -12,7 +12,7 @@ st.balloons()
 
 from streamlit_auth import require_auth, add_auth
 
-auth = add_auth()
+auth = add_auth(True, True, False)
 
 st.write(auth)
 
