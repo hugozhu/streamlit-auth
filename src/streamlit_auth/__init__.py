@@ -14,8 +14,7 @@ st.cache_data.login_users = {}
 
 def new_session_id():
     return uuid.uuid4().hex
-
-@st.cache_data
+    
 def get_manager():
     return stx.CookieManager()
 
